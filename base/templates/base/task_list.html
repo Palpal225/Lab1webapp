@@ -1,0 +1,105 @@
+{% if request.user.is_authenticated %}
+    <p>{{ request.user }}</p>
+
+    <form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+{% else %}
+    <a href="{% url 'login' %}">Login</a>
+{% endif %}
+
+<hr>
+<h1>My To Do List {{ color }}</h1>
+<a href="{% url 'task-create' %}">Add Task</a>
+<a href="{% url 'category-create' %}">Add Category</a>
+
+<form method="GET">
+    <input type="text" name="search-area" value="{{search_input}}">
+    <input type="submit" value="Search">
+</form>
+
+<form method="GET">
+    <label for="priority">Priority:</label>
+    <select name="priority" id="priority">
+        <option value="">Усі</option>
+        <option value="1">High</option>
+        <option value="2">Medium</option>
+        <option value="3">Low</option>
+    </select>
+    <label for="complete">Complete:</label>
+    <select name="complete" id="complete">
+        <option value="">Усі</option>
+        <option value="1">Completed</option>
+        <option value="0">Not completed</option>
+    </select>
+    <label for="task_category">Category:</label>
+    <select name="task_category" id="task_category">
+        <option value="">Усі</option>
+        {% for category in categories %}
+        <option value="{{ category.id }}">{{ category.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filter</button>
+</form>
+<form method = "GET">
+    <select name="sorting" id = "sorting">
+        <option value="">-----</option>
+        <option value="1">Priority</option>
+        <option value="2">Date</option>
+        <option value="3">Reverse priority</option>
+        <option value="4">Reverse date</option>
+    </select>
+    <button type="submit">Sort</button>
+</form>
+
+<table>
+    <tr>
+        <th>Item</th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th>Priority</th>
+        <th>Category</th>
+        <th>Deadline</th>
+        <th>Complete</th>
+    </tr>
+    {% for task in tasks %}
+    <tr>
+        <td>{{ task.title }}</td>
+        <td><a href="{% url 'task' task.id %}">View</a></td>
+        <td><a href="{% url 'task-update' task.id %}">Edit</a></td>
+        <td><a href="{% url 'task-delete' task.id %}">Delete</a></td>
+        <td>{{ task.get_priority_display }}</td>
+        <td>{{ task.task_category.name}}</td>
+        <td>{{ task.deadline|default:"" }}</td>
+        <td>{{ task.complete|yesno:"Complete,Not complete" }}</td>
+    </tr>
+    {% empty %}
+        <h3>No items in list</h3>
+    {% endfor %}
+</table>
+
+</br>
+<table>
+    <tr>
+        <th>Categories</th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+    {% for category in categories %}
+    <tr>
+        <td>{{ category.name }}</td>
+        <td><a href="{% url 'category' category.id %}">View</a></td>
+        <td><a href="{% url 'category-update' category.id %}">Edit</a></td>
+        <td><a href="{% url 'category-delete' category.id %}">Delete</a></td>
+    </tr>
+    {% empty %}
+    <h3>No categories</h3>
+    {% endfor %}
+</table>
+
+<p>Відсоток виконання: {{ overall_completion_percentage|floatformat:1 }}%</p>
+
+<a href="{% url 'export-pdf' %}">Export to PDF</a>
